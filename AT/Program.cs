@@ -1,4 +1,6 @@
 ﻿using System.Globalization;
+using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 
 namespace AT;
 
@@ -6,7 +8,18 @@ class Program
 {
     static void Main(string[] args)
     {
-        Exercicio9();
+        // Exercicio1();
+        // Exercicio2();
+        // Exercicio3();
+        // Exercicio4();
+        // Exercicio5();
+        // Exercicio6();
+        // Exercicio7();
+        // Exercicio8();
+        // Exercicio9();
+        // Exercicio10();
+        // Exercicio11();
+        // Exercicio12();
     }
 
     private static void Exercicio1()
@@ -299,7 +312,9 @@ class Program
                     if (!decimal.TryParse(precoRaw.Replace(",", "."), out var preco))
                     {
                         throw new ArgumentException("Por favor insira um valor de preço válido");
-                    };
+                    }
+
+                    ;
 
                     var produto = new Produto(nome.Trim(), preco, quantidade);
                     produtosLista.Add(produto);
@@ -332,7 +347,7 @@ class Program
                 var caminhoProjeto = Environment.CurrentDirectory.Split("bin");
                 var caminhoArquivo = Path.Combine(caminhoProjeto[0], "estoque.txt");
 
-                var produtosExistentes = GetProdutosDeArquivo();
+                var produtosExistentes = GetContatosDeArquivo();
 
                 try
                 {
@@ -358,7 +373,7 @@ class Program
                 }
             }
 
-            List<Produto> GetProdutosDeArquivo()
+            List<Produto> GetContatosDeArquivo()
             {
                 var caminhoProjeto = Environment.CurrentDirectory.Split("bin");
                 var caminhoArquivo = Path.Combine(caminhoProjeto[0], "estoque.txt");
@@ -388,7 +403,9 @@ class Program
 
                 if (!checarArquivo)
                 {
-                    using (File.Create(caminhoArquivo)) {}
+                    using (File.Create(caminhoArquivo))
+                    {
+                    }
                 }
 
                 var produtosListaVindosDoArquivo = new List<Produto>();
@@ -469,6 +486,519 @@ class Program
             Console.WriteLine("\nPressione qualquer tecla para voltar ao menu...");
             Console.ReadLine();
             Exercicio9();
+        }
+    }
+
+    private static void Exercicio10()
+    {
+        var tentativas = 1;
+
+        var random = new Random();
+        var numeroAleatorio = random.Next(1, 50);
+
+        try
+        {
+            while (tentativas <= 5)
+            {
+                Console.WriteLine("Tente adivinhar o número gerado!");
+                if (!int.TryParse(Console.ReadLine(), out var input))
+                {
+                    throw new ArgumentException("O número digitado precisa ser um inteiro");
+                }
+
+                if (input > 50 || input < 1)
+                {
+                    throw new ArgumentException("O número digitado precisa estar entre 1 e 50");
+                }
+
+                if (input == numeroAleatorio)
+                {
+                    Console.WriteLine($"Parabéns! Você acertou! O número gerado era {numeroAleatorio}!");
+                    return;
+                }
+
+                Console.WriteLine("Você errou! Tente novamente...");
+                Console.WriteLine($"Você tem ainda {5 - tentativas} tentativas");
+                tentativas++;
+            }
+
+            Console.WriteLine("GAME OVER!");
+            Console.WriteLine("Você não conseguiu adivinhar o numero aleatorio!");
+            Console.WriteLine($"O numero gerado foi {numeroAleatorio}");
+        }
+        catch (ArgumentException e)
+        {
+            Console.WriteLine(e.Message);
+            Exercicio10();
+            return;
+        }
+    }
+
+    private static void Exercicio11()
+    {
+        try
+        {
+            void InserirContato()
+            {
+                List<Contato> listaContatos = new List<Contato>();
+                var continuarExecutandoLista = true;
+                string formatoTelefoneRegex = @"^\(\d{2}\)\s\d{5}-\d{4}$";
+
+                while (continuarExecutandoLista)
+                {
+                    Console.Write("Digite o nome do contato: ");
+                    var nome = Console.ReadLine();
+
+                    if (string.IsNullOrWhiteSpace(nome))
+                    {
+                        throw new ArgumentException("Nome do contato não pode ser vazio");
+                    }
+
+                    Console.Write("Digite o telefone do contato: ");
+                    var telefone = Console.ReadLine();
+
+                    if (string.IsNullOrWhiteSpace(telefone))
+                    {
+                        throw new ArgumentException("Telefone não pode ser vazio");
+                    }
+
+                    if (!Regex.IsMatch(telefone, formatoTelefoneRegex))
+                    {
+                        throw new ArgumentException(
+                            "Por favor insira um telefone válido! Siga o formato: (99) 99999-9999");
+                    }
+
+                    Console.Write("Digite o email do Contato: ");
+                    var email = Console.ReadLine();
+
+                    if (string.IsNullOrWhiteSpace(email))
+                    {
+                        throw new ArgumentException("Email não pode ser vazio");
+                    }
+
+                    if (!email.Contains("@") && !email.Contains(".com"))
+                    {
+                        throw new ArgumentException("Por favor insira um email válido");
+                    }
+
+                    var contato = new Contato(nome.Trim().ToLower(), telefone.Trim(), email.Trim().ToLower());
+                    listaContatos.Add(contato);
+
+                    Console.WriteLine("CONTATO INSERIDO COM SUCESSO!");
+                    Console.WriteLine("Gostaria de adicionar mais um contato? S (Sim) ou N (Não)");
+                    var opcao = Console.ReadLine().ToUpper();
+
+                    if (opcao == "N")
+                    {
+                        Console.WriteLine("Salvando produtos salvos...");
+                        GravarContatosEmArquivo(listaContatos);
+                        Console.WriteLine("Voltando ao menu...");
+                        Thread.Sleep(5);
+                        continuarExecutandoLista = false;
+                    }
+
+                    if (opcao != "S" && opcao != "N")
+                    {
+                        Console.WriteLine("Opção Inválida! Voltando ao menu...");
+                        Console.WriteLine("Salvando produtos salvos...");
+                        GravarContatosEmArquivo(listaContatos);
+                        Thread.Sleep(5);
+                        continuarExecutandoLista = false;
+                    }
+                }
+            }
+
+            void GravarContatosEmArquivo(List<Contato> lista)
+            {
+                var caminhoProjeto = Environment.CurrentDirectory.Split("bin");
+                var caminhoArquivo = Path.Combine(caminhoProjeto[0], "contatos.txt");
+
+                var produtosExistentes = GetContatosDeArquivo();
+
+                try
+                {
+                    using (var streamWriter = new StreamWriter(caminhoArquivo, true))
+                    {
+                        foreach (var produto in lista)
+                        {
+                            if (!produtosExistentes.Exists(p => p.Nome == produto.Nome))
+                            {
+                                streamWriter.WriteLine(
+                                    $"{produto.GetNome()},{produto.GetTelefone()},{produto.GetEmail()}");
+                            }
+                        }
+
+                        streamWriter.Flush();
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    Menu();
+                    throw;
+                }
+            }
+
+            List<Contato> GetContatosDeArquivo()
+            {
+                var caminhoProjeto = Environment.CurrentDirectory.Split("bin");
+                var caminhoArquivo = Path.Combine(caminhoProjeto[0], "contatos.txt");
+
+                var contatosListaVindosDoArquivo = new List<Contato>();
+                using (var streamReader = new StreamReader(caminhoArquivo))
+                {
+                    string line;
+                    while ((line = streamReader.ReadLine()) != null)
+                    {
+                        var dadosContato = line.Split(',');
+                        var contato = new Contato(dadosContato[0], dadosContato[2],
+                            dadosContato[1]);
+                        contatosListaVindosDoArquivo.Add(contato);
+                    }
+                }
+
+                return contatosListaVindosDoArquivo;
+            }
+
+            void ListarContatos()
+            {
+                var caminhoProjeto = Environment.CurrentDirectory.Split("bin");
+                var caminhoArquivo = Path.Combine(caminhoProjeto[0], "contatos.txt");
+
+                var checarArquivo = File.Exists(caminhoArquivo);
+
+                if (!checarArquivo)
+                {
+                    using (File.Create(caminhoArquivo))
+                    {
+                    }
+                }
+
+                var contatosListaVindosDoArquivo = new List<Contato>();
+                using (var streamReader = new StreamReader(caminhoArquivo))
+                {
+                    string line;
+                    while ((line = streamReader.ReadLine()) != null)
+                    {
+                        var dadosProduto = line.Split(',');
+                        var contato = new Contato(dadosProduto[0], dadosProduto[1],
+                            dadosProduto[2]);
+                        contatosListaVindosDoArquivo.Add(contato);
+                    }
+                }
+
+                var tamanhoListaContatos = contatosListaVindosDoArquivo.Count();
+
+                Console.WriteLine("------------ LISTA DE PRODUTOS ------------");
+                if (tamanhoListaContatos == 0)
+                {
+                    Console.WriteLine("Nenhum produto cadastrado.");
+                    Console.WriteLine("\nPressione qualquer tecla para voltar ao menu...");
+                    Console.ReadLine();
+                    return;
+                }
+
+                foreach (var contato in contatosListaVindosDoArquivo)
+                {
+                    Console.WriteLine($"{contato.ToString()}");
+                }
+
+
+                Console.WriteLine("\nPressione qualquer tecla para voltar ao menu...");
+                Console.ReadLine();
+            }
+
+            void Menu()
+            {
+                var sistemaLigado = true;
+
+                while (sistemaLigado)
+                {
+                    Console.Clear();
+                    Console.WriteLine("=== GERENCIADOR DE CONTATOS ===");
+                    Console.WriteLine("1 - Adicionar novo contato");
+                    Console.WriteLine("2 - Listar contatos cadastrados");
+                    Console.WriteLine("3 - Sair");
+
+                    Console.Write("Escolha uma opção: ");
+                    var opcao = int.Parse(Console.ReadLine());
+
+                    switch (opcao)
+                    {
+                        case 1: InserirContato(); break;
+                        case 2: ListarContatos(); break;
+                        case 3:
+                            Console.WriteLine("Saindo...");
+                            sistemaLigado = false;
+                            return;
+                        default:
+                            Console.WriteLine("Opção inválida! Voltando ao menu");
+                            break;
+                    }
+                }
+            }
+
+            Menu();
+        }
+        catch (ArgumentException e)
+        {
+            Console.WriteLine(e.Message);
+            Console.WriteLine("\nPressione qualquer tecla para voltar ao menu...");
+            Console.ReadLine();
+            Exercicio11();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+            Console.WriteLine("\nPressione qualquer tecla para voltar ao menu...");
+            Console.ReadLine();
+            Exercicio11();
+        }
+    }
+    
+    
+    private static void Exercicio12()
+    {
+        try
+        {
+            void InserirContato()
+            {
+                List<Contato> listaContatos = new List<Contato>();
+                var continuarExecutandoLista = true;
+                string formatoTelefoneRegex = @"^\(\d{2}\)\s\d{5}-\d{4}$";
+
+                while (continuarExecutandoLista)
+                {
+                    Console.Write("Digite o nome do contato: ");
+                    var nome = Console.ReadLine();
+
+                    if (string.IsNullOrWhiteSpace(nome))
+                    {
+                        throw new ArgumentException("Nome do contato não pode ser vazio");
+                    }
+
+                    Console.Write("Digite o telefone do contato: ");
+                    var telefone = Console.ReadLine();
+
+                    if (string.IsNullOrWhiteSpace(telefone))
+                    {
+                        throw new ArgumentException("Telefone não pode ser vazio");
+                    }
+
+                    if (!Regex.IsMatch(telefone, formatoTelefoneRegex))
+                    {
+                        throw new ArgumentException(
+                            "Por favor insira um telefone válido! Siga o formato: (99) 99999-9999");
+                    }
+
+                    Console.Write("Digite o email do Contato: ");
+                    var email = Console.ReadLine();
+
+                    if (string.IsNullOrWhiteSpace(email))
+                    {
+                        throw new ArgumentException("Email não pode ser vazio");
+                    }
+
+                    if (!email.Contains("@") && !email.Contains(".com"))
+                    {
+                        throw new ArgumentException("Por favor insira um email válido");
+                    }
+
+                    var contato = new Contato(nome.Trim().ToLower(), telefone.Trim(), email.Trim().ToLower());
+                    listaContatos.Add(contato);
+
+                    Console.WriteLine("CONTATO INSERIDO COM SUCESSO!");
+                    Console.WriteLine("Gostaria de adicionar mais um contato? S (Sim) ou N (Não)");
+                    var opcao = Console.ReadLine().ToUpper();
+
+                    if (opcao == "N")
+                    {
+                        Console.WriteLine("Salvando produtos salvos...");
+                        GravarContatosEmArquivo(listaContatos);
+                        Console.WriteLine("Voltando ao menu...");
+                        Thread.Sleep(5);
+                        continuarExecutandoLista = false;
+                    }
+
+                    if (opcao != "S" && opcao != "N")
+                    {
+                        Console.WriteLine("Opção Inválida! Voltando ao menu...");
+                        Console.WriteLine("Salvando produtos salvos...");
+                        GravarContatosEmArquivo(listaContatos);
+                        Thread.Sleep(5);
+                        continuarExecutandoLista = false;
+                    }
+                }
+            }
+
+            void GravarContatosEmArquivo(List<Contato> lista)
+            {
+                var caminhoProjeto = Environment.CurrentDirectory.Split("bin");
+                var caminhoArquivo = Path.Combine(caminhoProjeto[0], "contatos.txt");
+
+                var produtosExistentes = GetContatosDeArquivo();
+
+                try
+                {
+                    using (var streamWriter = new StreamWriter(caminhoArquivo, true))
+                    {
+                        foreach (var produto in lista)
+                        {
+                            if (!produtosExistentes.Exists(p => p.Nome == produto.Nome))
+                            {
+                                streamWriter.WriteLine(
+                                    $"{produto.GetNome()},{produto.GetTelefone()},{produto.GetEmail()}");
+                            }
+                        }
+
+                        streamWriter.Flush();
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    Menu();
+                    throw;
+                }
+            }
+
+            List<Contato> GetContatosDeArquivo()
+            {
+                var caminhoProjeto = Environment.CurrentDirectory.Split("bin");
+                var caminhoArquivo = Path.Combine(caminhoProjeto[0], "contatos.txt");
+
+                var contatosListaVindosDoArquivo = new List<Contato>();
+                using (var streamReader = new StreamReader(caminhoArquivo))
+                {
+                    string line;
+                    while ((line = streamReader.ReadLine()) != null)
+                    {
+                        var dadosContato = line.Split(',');
+                        var contato = new Contato(dadosContato[0], dadosContato[2],
+                            dadosContato[1]);
+                        contatosListaVindosDoArquivo.Add(contato);
+                    }
+                }
+
+                return contatosListaVindosDoArquivo;
+            }
+
+            void ListarContatos()
+            {
+                var caminhoProjeto = Environment.CurrentDirectory.Split("bin");
+                var caminhoArquivo = Path.Combine(caminhoProjeto[0], "contatos.txt");
+
+                var checarArquivo = File.Exists(caminhoArquivo);
+
+                if (!checarArquivo)
+                {
+                    using (File.Create(caminhoArquivo))
+                    {
+                    }
+                }
+
+                var contatosListaVindosDoArquivo = new List<Contato>();
+                using (var streamReader = new StreamReader(caminhoArquivo))
+                {
+                    string line;
+                    while ((line = streamReader.ReadLine()) != null)
+                    {
+                        var dadosProduto = line.Split(',');
+                        var contato = new Contato(dadosProduto[0], dadosProduto[1],
+                            dadosProduto[2]);
+                        contatosListaVindosDoArquivo.Add(contato);
+                    }
+                }
+
+                var tamanhoListaContatos = contatosListaVindosDoArquivo.Count();
+
+                Console.WriteLine("------------ LISTA DE CONTATOS ------------");
+                if (tamanhoListaContatos == 0)
+                {
+                    Console.WriteLine("Nenhum produto cadastrado.");
+                    Console.WriteLine("\nPressione qualquer tecla para voltar ao menu...");
+                    Console.ReadLine();
+                    return;
+                }
+                Console.WriteLine("Escolha o formato de exibição:");
+                Console.WriteLine("1 - Markdown");
+                Console.WriteLine("2 - Tabela");
+                Console.WriteLine("3 - Texto Puro");
+                Console.Write("Opção: ");
+                
+                if (!int.TryParse(Console.ReadLine(), out int opcaoFormato) || opcaoFormato < 1 || opcaoFormato > 3)
+                {
+                    Console.WriteLine("Opção inválida! Usando formato padrão (Texto Puro).");
+                    opcaoFormato = 3;
+                }
+
+                ContatoFormatter formatter;
+                switch (opcaoFormato)
+                {
+                    case 1:
+                        formatter = new MarkdownFormatter();
+                        break;
+                    case 2:
+                        formatter = new TabelaFormatter();
+                        break;
+                    default:
+                        formatter = new RawTextFormatter();
+                        break;
+                }
+
+                Console.Clear();
+                Console.WriteLine("------------ LISTA DE CONTATOS ------------");
+                formatter.ExibirContatos(contatosListaVindosDoArquivo);
+
+                Console.WriteLine("\nPressione qualquer tecla para voltar ao menu...");
+                Console.ReadLine();
+            }
+
+            void Menu()
+            {
+                var sistemaLigado = true;
+
+                while (sistemaLigado)
+                {
+                    Console.Clear();
+                    Console.WriteLine("=== GERENCIADOR DE CONTATOS ===");
+                    Console.WriteLine("1 - Adicionar novo contato");
+                    Console.WriteLine("2 - Listar contatos cadastrados");
+                    Console.WriteLine("3 - Sair");
+
+                    Console.Write("Escolha uma opção: ");
+                    var opcao = int.Parse(Console.ReadLine());
+
+                    switch (opcao)
+                    {
+                        case 1: InserirContato(); break;
+                        case 2: ListarContatos(); break;
+                        case 3:
+                            Console.WriteLine("Saindo...");
+                            sistemaLigado = false;
+                            return;
+                        default:
+                            Console.WriteLine("Opção inválida! Voltando ao menu");
+                            break;
+                    }
+                }
+            }
+
+            Menu();
+        }
+        catch (ArgumentException e)
+        {
+            Console.WriteLine(e.Message);
+            Console.WriteLine("\nPressione qualquer tecla para voltar ao menu...");
+            Console.ReadLine();
+            Exercicio12();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+            Console.WriteLine("\nPressione qualquer tecla para voltar ao menu...");
+            Console.ReadLine();
+            Exercicio12();
         }
     }
 }
